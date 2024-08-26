@@ -1,0 +1,1 @@
+DEBUG=social-live:* npm start
