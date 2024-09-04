@@ -32,7 +32,7 @@ const socketController = (io) => {
 
       // Check if rate limit exceeded
       // if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-      //   socket.emit(
+      //   io.emit(
       //     "tiktokDisconnected",
       //     "You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok."
       //   );
@@ -48,62 +48,62 @@ const socketController = (io) => {
         );
         tiktokConnectionWrapper.connect();
       } catch (err) {
-        socket.emit("tiktokDisconnected", err.toString());
+        io.emit("tiktokDisconnected", err.toString());
         return;
       }
 
       // Redirect wrapper control events once
       tiktokConnectionWrapper.once("connected", (state) =>
-        socket.emit("tiktokConnected", state)
+        io.emit("tiktokConnected", state)
       );
       tiktokConnectionWrapper.once("disconnected", (reason) =>
-        socket.emit("tiktokDisconnected", reason)
+        io.emit("tiktokDisconnected", reason)
       );
 
       // Notify client when stream ends
       tiktokConnectionWrapper.connection.on("streamEnd", () =>
-        socket.emit("streamEnd")
+        io.emit("streamEnd")
       );
 
       // Redirect message events
       tiktokConnectionWrapper.connection.on("roomUser", (msg) =>
-        socket.emit("roomUser", msg)
+        io.emit("roomUser", msg)
       );
       tiktokConnectionWrapper.connection.on("member", (msg) =>
-        socket.emit("member", msg)
+        io.emit("member", msg)
       );
       tiktokConnectionWrapper.connection.on("chat", (msg) =>
-        socket.emit("chat", msg)
+        io.emit("chat", msg)
       );
       tiktokConnectionWrapper.connection.on("gift", (msg) =>
-        socket.emit("gift", msg)
+        io.emit("gift", msg)
       );
       tiktokConnectionWrapper.connection.on("social", (msg) =>
-        socket.emit("social", msg)
+        io.emit("social", msg)
       );
       tiktokConnectionWrapper.connection.on("like", (msg) =>
-        socket.emit("like", msg)
+        io.emit("like", msg)
       );
       tiktokConnectionWrapper.connection.on("questionNew", (msg) =>
-        socket.emit("questionNew", msg)
+        io.emit("questionNew", msg)
       );
       tiktokConnectionWrapper.connection.on("linkMicBattle", (msg) =>
-        socket.emit("linkMicBattle", msg)
+        io.emit("linkMicBattle", msg)
       );
       tiktokConnectionWrapper.connection.on("linkMicArmies", (msg) =>
-        socket.emit("linkMicArmies", msg)
+        io.emit("linkMicArmies", msg)
       );
       tiktokConnectionWrapper.connection.on("liveIntro", (msg) =>
-        socket.emit("liveIntro", msg)
+        io.emit("liveIntro", msg)
       );
       tiktokConnectionWrapper.connection.on("emote", (msg) =>
-        socket.emit("emote", msg)
+        io.emit("emote", msg)
       );
       tiktokConnectionWrapper.connection.on("envelope", (msg) =>
-        socket.emit("envelope", msg)
+        io.emit("envelope", msg)
       );
       tiktokConnectionWrapper.connection.on("subscribe", (msg) =>
-        socket.emit("subscribe", msg)
+        io.emit("subscribe", msg)
       );
     });
     socket.on("setUniqueId", (uniqueId, options) => {
@@ -125,7 +125,7 @@ const socketController = (io) => {
 
       // Check if rate limit exceeded
       if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-        socket.emit(
+        io.emit(
           "tiktokDisconnected",
           "You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok."
         );
@@ -141,62 +141,62 @@ const socketController = (io) => {
         );
         tiktokConnectionWrapper.connect();
       } catch (err) {
-        socket.emit("tiktokDisconnected", err.toString());
+        io.emit("tiktokDisconnected", err.toString());
         return;
       }
 
       // Redirect wrapper control events once
       tiktokConnectionWrapper.once("connected", (state) =>
-        socket.emit("tiktokConnected", state)
+        io.emit("tiktokConnected", state)
       );
       tiktokConnectionWrapper.once("disconnected", (reason) =>
-        socket.emit("tiktokDisconnected", reason)
+        io.emit("tiktokDisconnected", reason)
       );
 
       // Notify client when stream ends
       tiktokConnectionWrapper.connection.on("streamEnd", () =>
-        socket.emit("streamEnd")
+        io.emit("streamEnd")
       );
 
       // Redirect message events
       tiktokConnectionWrapper.connection.on("roomUser", (msg) =>
-        socket.emit("roomUser", msg)
+        io.emit("roomUser", msg)
       );
       tiktokConnectionWrapper.connection.on("member", (msg) =>
-        socket.emit("member", msg)
+        io.emit("member", msg)
       );
       tiktokConnectionWrapper.connection.on("chat", (msg) =>
-        socket.emit("chat", msg)
+        io.emit("chat", msg)
       );
       tiktokConnectionWrapper.connection.on("gift", (msg) =>
-        socket.emit("gift", msg)
+        io.emit("gift", msg)
       );
       tiktokConnectionWrapper.connection.on("social", (msg) =>
-        socket.emit("social", msg)
+        io.emit("social", msg)
       );
       tiktokConnectionWrapper.connection.on("like", (msg) =>
-        socket.emit("like", msg)
+        io.emit("like", msg)
       );
       tiktokConnectionWrapper.connection.on("questionNew", (msg) =>
-        socket.emit("questionNew", msg)
+        io.emit("questionNew", msg)
       );
       tiktokConnectionWrapper.connection.on("linkMicBattle", (msg) =>
-        socket.emit("linkMicBattle", msg)
+        io.emit("linkMicBattle", msg)
       );
       tiktokConnectionWrapper.connection.on("linkMicArmies", (msg) =>
-        socket.emit("linkMicArmies", msg)
+        io.emit("linkMicArmies", msg)
       );
       tiktokConnectionWrapper.connection.on("liveIntro", (msg) =>
-        socket.emit("liveIntro", msg)
+        io.emit("liveIntro", msg)
       );
       tiktokConnectionWrapper.connection.on("emote", (msg) =>
-        socket.emit("emote", msg)
+        io.emit("emote", msg)
       );
       tiktokConnectionWrapper.connection.on("envelope", (msg) =>
-        socket.emit("envelope", msg)
+        io.emit("envelope", msg)
       );
       tiktokConnectionWrapper.connection.on("subscribe", (msg) =>
-        socket.emit("subscribe", msg)
+        io.emit("subscribe", msg)
       );
     });
 
