@@ -1,0 +1,51 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - svsocket
+
+on:
+  push:
+    branches:
+      - azure-deploy
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://ecmanagementacr.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_060ed5c5711347fdbd3307de8a1ace13 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_001efa08f3f9446993b6eebdd141dd68 }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: ecmanagementacr.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_060ed5c5711347fdbd3307de8a1ace13 }}/ecmanagementacr/ecmanagementacr/socketserver:${{ github.sha }}
+        file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'svsocket'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_81305f95047c4a21b19902c27d8c1e54 }}
+        images: 'ecmanagementacr.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_060ed5c5711347fdbd3307de8a1ace13 }}/ecmanagementacr/ecmanagementacr/socketserver:${{ github.sha }}'
