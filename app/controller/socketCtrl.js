@@ -4,10 +4,14 @@ const {
 } = require("../services/connectionWrapper");
 const { clientBlocked } = require("./limiter");
 
+let isConnectedToTiktok = false;
+let tiktokConnectionWrapper;
+const clients = []
+
 const socketController = (io) => {
   io.on("connection", (socket) => {
-    let tiktokConnectionWrapper;
-
+    
+    clients.push(socket)
     console.info(
       "New connection from origin",
       socket.handshake.headers["origin"] || socket.handshake.headers["referer"]
@@ -22,22 +26,13 @@ const socketController = (io) => {
       }
       const { uniqueId, sessionId } = data;
 
-      console.log("tienvv", data);
-
-      // Session ID in .env file is optional
-      //   if (process.env.SESSIONID) {
-      //     options.sessionId = process.env.SESSIONID;
-      //     console.info("Using SessionId");
-      //   }
-
-      // Check if rate limit exceeded
-      // if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-      //   io.emit(
-      //     "tiktokDisconnected",
-      //     "You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok."
-      //   );
-      //   return;
-      // }
+      if (isConnectedToTiktok) {
+        io.emit("server-status", {
+          status: "fail",
+          msg: "Already connect to tiktok",
+        });
+        return;
+      }
 
       // Connect to the given username (uniqueId)
       try {
@@ -53,16 +48,21 @@ const socketController = (io) => {
       }
 
       // Redirect wrapper control events once
-      tiktokConnectionWrapper.once("connected", (state) =>
-        io.emit("tiktokConnected", state)
-      );
-      tiktokConnectionWrapper.once("disconnected", (reason) =>
+      tiktokConnectionWrapper.once("connected", (state) => {
+        isConnectedToTiktok = true;
+        io.emit("tiktokConnected", state);
+      });
+      tiktokConnectionWrapper.once("disconnected", (reason) => {
+        isConnectedToTiktok = false;
         io.emit("tiktokDisconnected", reason)
+      }
       );
 
       // Notify client when stream ends
-      tiktokConnectionWrapper.connection.on("streamEnd", () =>
+      tiktokConnectionWrapper.connection.on("streamEnd", () => {
+        isConnectedToTiktok = false;
         io.emit("streamEnd")
+      }
       );
 
       // Redirect message events
@@ -201,19 +201,15 @@ const socketController = (io) => {
     });
 
     socket.on("printOrder", (msg) => {
-      console.log("printOrder", msg)
-      const data = {
-        name: "TienVV",
-        comments: "Hello",
-        date: "2024"
-      }
+      console.log("printOrder", msg);
       socket.broadcast.emit("print_order", msg);
     });
 
     socket.on("disconnect", () => {
-      if (tiktokConnectionWrapper) {
-        tiktokConnectionWrapper.disconnect();
-      }
+      // if (tiktokConnectionWrapper) {
+      //   tiktokConnectionWrapper.disconnect();
+      // }
+      clients = clients.filter(clientId => clientId !== socket.id);
     });
     socket.on("disconnectTiktok", () => {
       if (tiktokConnectionWrapper) {
