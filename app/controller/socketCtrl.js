@@ -6,12 +6,9 @@ const { clientBlocked } = require("./limiter");
 
 let isConnectedToTiktok = false;
 let tiktokConnectionWrapper;
-const clients = []
 
 const socketController = (io) => {
   io.on("connection", (socket) => {
-    
-    clients.push(socket)
     console.info(
       "New connection from origin",
       socket.handshake.headers["origin"] || socket.handshake.headers["referer"]
@@ -209,7 +206,6 @@ const socketController = (io) => {
       // if (tiktokConnectionWrapper) {
       //   tiktokConnectionWrapper.disconnect();
       // }
-      clients = clients.filter(clientId => clientId !== socket.id);
     });
     socket.on("disconnectTiktok", () => {
       if (tiktokConnectionWrapper) {
