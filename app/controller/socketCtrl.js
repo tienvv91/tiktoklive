@@ -5,10 +5,10 @@ const {
 const { clientBlocked } = require("./limiter");
 
 let isConnectedToTiktok = false;
-let tiktokConnectionWrapper;
 
 const socketController = (io) => {
   io.on("connection", (socket) => {
+    let tiktokConnectionWrapper;
     console.info(
       "New connection from origin",
       socket.handshake.headers["origin"] || socket.handshake.headers["referer"]
@@ -23,13 +23,13 @@ const socketController = (io) => {
       }
       const { uniqueId, sessionId } = data;
 
-      if (isConnectedToTiktok) {
-        io.emit("server-status", {
-          status: "fail",
-          msg: "Already connect to tiktok",
-        });
-        return;
-      }
+      // if (isConnectedToTiktok) {
+      //   io.emit("server-status", {
+      //     status: "fail",
+      //     msg: "Already connect to tiktok",
+      //   });
+      //   return;
+      // }
 
       // Connect to the given username (uniqueId)
       try {
@@ -203,9 +203,9 @@ const socketController = (io) => {
     });
 
     socket.on("disconnect", () => {
-      // if (tiktokConnectionWrapper) {
-      //   tiktokConnectionWrapper.disconnect();
-      // }
+      if (tiktokConnectionWrapper) {
+        tiktokConnectionWrapper.disconnect();
+      }
     });
     socket.on("disconnectTiktok", () => {
       if (tiktokConnectionWrapper) {
