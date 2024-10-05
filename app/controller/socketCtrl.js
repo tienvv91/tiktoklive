@@ -22,15 +22,7 @@ const socketController = (io) => {
         options = {};
       }
       const { uniqueId, sessionId } = data;
-
-      // if (isConnectedToTiktok) {
-      //   io.emit("server-status", {
-      //     status: "fail",
-      //     msg: "Already connect to tiktok",
-      //   });
-      //   return;
-      // }
-
+      socket.join(uniqueId);
       // Connect to the given username (uniqueId)
       try {
         tiktokConnectionWrapper = new TikTokConnectionWrapper(
@@ -40,166 +32,70 @@ const socketController = (io) => {
         );
         tiktokConnectionWrapper.connect();
       } catch (err) {
-        io.emit("tiktokDisconnected", err.toString());
+        io.to(uniqueId).emit("tiktokDisconnected", err.toString());
         return;
       }
 
       // Redirect wrapper control events once
       tiktokConnectionWrapper.once("connected", (state) => {
         isConnectedToTiktok = true;
-        io.emit("tiktokConnected", state);
+        io.to(uniqueId).emit("tiktokConnected", state);
       });
       tiktokConnectionWrapper.once("disconnected", (reason) => {
         isConnectedToTiktok = false;
-        io.emit("tiktokDisconnected", reason)
-      }
-      );
+        io.to(uniqueId).emit("tiktokDisconnected", reason);
+      });
 
       // Notify client when stream ends
       tiktokConnectionWrapper.connection.on("streamEnd", () => {
         isConnectedToTiktok = false;
-        io.emit("streamEnd")
-      }
-      );
+        io.to(uniqueId).emit("streamEnd");
+      });
 
       // Redirect message events
       tiktokConnectionWrapper.connection.on("roomUser", (msg) =>
-        io.emit("roomUser", msg)
+        io.to(uniqueId).emit("roomUser", msg)
       );
       tiktokConnectionWrapper.connection.on("member", (msg) =>
-        io.emit("member", msg)
+        io.to(uniqueId).emit("member", msg)
       );
       tiktokConnectionWrapper.connection.on("chat", (msg) =>
-        io.emit("chat", msg)
+        io.to(uniqueId).emit("chat", msg)
       );
       tiktokConnectionWrapper.connection.on("gift", (msg) =>
-        io.emit("gift", msg)
+        io.to(uniqueId).emit("gift", msg)
       );
       tiktokConnectionWrapper.connection.on("social", (msg) =>
-        io.emit("social", msg)
+        io.to(uniqueId).emit("social", msg)
       );
       tiktokConnectionWrapper.connection.on("like", (msg) =>
-        io.emit("like", msg)
+        io.to(uniqueId).emit("like", msg)
       );
       tiktokConnectionWrapper.connection.on("questionNew", (msg) =>
-        io.emit("questionNew", msg)
+        io.to(uniqueId).emit("questionNew", msg)
       );
       tiktokConnectionWrapper.connection.on("linkMicBattle", (msg) =>
-        io.emit("linkMicBattle", msg)
+        io.to(uniqueId).emit("linkMicBattle", msg)
       );
       tiktokConnectionWrapper.connection.on("linkMicArmies", (msg) =>
-        io.emit("linkMicArmies", msg)
+        io.to(uniqueId).emit("linkMicArmies", msg)
       );
       tiktokConnectionWrapper.connection.on("liveIntro", (msg) =>
-        io.emit("liveIntro", msg)
+        io.to(uniqueId).emit("liveIntro", msg)
       );
       tiktokConnectionWrapper.connection.on("emote", (msg) =>
-        io.emit("emote", msg)
+        io.to(uniqueId).emit("emote", msg)
       );
       tiktokConnectionWrapper.connection.on("envelope", (msg) =>
-        io.emit("envelope", msg)
+        io.to(uniqueId).emit("envelope", msg)
       );
       tiktokConnectionWrapper.connection.on("subscribe", (msg) =>
-        io.emit("subscribe", msg)
+        io.to(uniqueId).emit("subscribe", msg)
       );
     });
-    socket.on("setUniqueId", (uniqueId, options) => {
-      // Prohibit the client from specifying these options (for security reasons)
-      if (typeof options === "object" && options) {
-        delete options.requestOptions;
-        delete options.websocketOptions;
-      } else {
-        options = {};
-      }
-
-      console.log("tienvv", options);
-
-      // Session ID in .env file is optional
-      //   if (process.env.SESSIONID) {
-      //     options.sessionId = process.env.SESSIONID;
-      //     console.info("Using SessionId");
-      //   }
-
-      // Check if rate limit exceeded
-      if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-        io.emit(
-          "tiktokDisconnected",
-          "You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok."
-        );
-        return;
-      }
-
-      // Connect to the given username (uniqueId)
-      try {
-        tiktokConnectionWrapper = new TikTokConnectionWrapper(
-          uniqueId,
-          options,
-          true
-        );
-        tiktokConnectionWrapper.connect();
-      } catch (err) {
-        io.emit("tiktokDisconnected", err.toString());
-        return;
-      }
-
-      // Redirect wrapper control events once
-      tiktokConnectionWrapper.once("connected", (state) =>
-        io.emit("tiktokConnected", state)
-      );
-      tiktokConnectionWrapper.once("disconnected", (reason) =>
-        io.emit("tiktokDisconnected", reason)
-      );
-
-      // Notify client when stream ends
-      tiktokConnectionWrapper.connection.on("streamEnd", () =>
-        io.emit("streamEnd")
-      );
-
-      // Redirect message events
-      tiktokConnectionWrapper.connection.on("roomUser", (msg) =>
-        io.emit("roomUser", msg)
-      );
-      tiktokConnectionWrapper.connection.on("member", (msg) =>
-        io.emit("member", msg)
-      );
-      tiktokConnectionWrapper.connection.on("chat", (msg) =>
-        io.emit("chat", msg)
-      );
-      tiktokConnectionWrapper.connection.on("gift", (msg) =>
-        io.emit("gift", msg)
-      );
-      tiktokConnectionWrapper.connection.on("social", (msg) =>
-        io.emit("social", msg)
-      );
-      tiktokConnectionWrapper.connection.on("like", (msg) =>
-        io.emit("like", msg)
-      );
-      tiktokConnectionWrapper.connection.on("questionNew", (msg) =>
-        io.emit("questionNew", msg)
-      );
-      tiktokConnectionWrapper.connection.on("linkMicBattle", (msg) =>
-        io.emit("linkMicBattle", msg)
-      );
-      tiktokConnectionWrapper.connection.on("linkMicArmies", (msg) =>
-        io.emit("linkMicArmies", msg)
-      );
-      tiktokConnectionWrapper.connection.on("liveIntro", (msg) =>
-        io.emit("liveIntro", msg)
-      );
-      tiktokConnectionWrapper.connection.on("emote", (msg) =>
-        io.emit("emote", msg)
-      );
-      tiktokConnectionWrapper.connection.on("envelope", (msg) =>
-        io.emit("envelope", msg)
-      );
-      tiktokConnectionWrapper.connection.on("subscribe", (msg) =>
-        io.emit("subscribe", msg)
-      );
-    });
-
     socket.on("printOrder", (msg) => {
       console.log("printOrder", msg);
-      socket.broadcast.emit("print_order", msg);
+      io.to(uniqueId).emit("print_order", msg);
     });
 
     socket.on("disconnect", () => {
@@ -208,6 +104,7 @@ const socketController = (io) => {
       }
     });
     socket.on("disconnectTiktok", () => {
+      console.log("=========> client send: disconnectTiktok");
       if (tiktokConnectionWrapper) {
         tiktokConnectionWrapper.disconnect();
       }
